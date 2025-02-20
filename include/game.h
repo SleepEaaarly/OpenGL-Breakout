@@ -31,6 +31,9 @@ public:
     void ProcessInput(GLfloat dt);
     void Update(GLfloat dt);
     void Render();
+    void DoCollisions(GLfloat dt);
+    void ResetLevel();
+    void ResetPlayer();
 };
 
 #endif

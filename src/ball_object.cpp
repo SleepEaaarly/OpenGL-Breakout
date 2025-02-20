@@ -24,8 +24,25 @@ glm::vec2 BallObject::Move(GLfloat dt, GLuint window_width) {
     return Position;
 }
 
-void BallObject::Reset(glm::vec2 position, glm::vec2 velocity) {
+void BallObject::BallReset(glm::vec2 position, glm::vec2 velocity, const float radius) {
     Position = position;
     Velocity = velocity;
+    Radius = radius;
     Stuck = true;
+}
+
+Collision BallObject::GetCollision(GameObject &other) {
+    glm::vec2 spherePoint(Position.x + Radius, Position.y + Radius);
+    glm::vec2 aabbLeftTop(other.Position.x, other.Position.y);
+    glm::vec2 aabbRightBottom(other.Position.x + other.Scale.x, other.Position.y + other.Scale.y);
+    
+    glm::vec2 nearestPoint = glm::clamp(spherePoint, aabbLeftTop, aabbRightBottom);
+
+    float dist = glm::distance(nearestPoint, spherePoint);
+
+    return std::make_tuple(dist <= Radius, nearestPoint, dist);
+}
+
+GLboolean BallObject::CheckCollision(GameObject &other) {
+    return std::get<0>(GetCollision(other));
 }

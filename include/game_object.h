@@ -22,6 +22,8 @@ public:
     GameObject(glm::vec2 pos, glm::vec2 scale, Texture2D sprite, glm::vec3 color = glm::vec3(1.), glm::vec2 velocity = glm::vec2(0., 0.));
 
     virtual void Draw(SpriteRenderer &renderer);
+    virtual GLboolean CheckCollision(GameObject &other);
+    void PlayerReset(glm::vec2& playPos, const glm::vec2& PLAYER_SIZE);
 };
 
 

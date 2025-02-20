@@ -7,5 +7,20 @@ GameObject::GameObject(glm::vec2 pos, glm::vec2 scale, Texture2D sprite, glm::ve
     Position(pos), Scale(scale), Velocity(velocity), Color(color), Rotation(0.), IsSolid(false), Destroyed(false), Sprite(sprite) { }
 
 void GameObject::Draw(SpriteRenderer &renderer) {
-    renderer.DrawSprite(Sprite, Position, Scale, Rotation, Color);
+    if (!Destroyed)
+        renderer.DrawSprite(Sprite, Position, Scale, Rotation, Color);
+}
+
+GLboolean GameObject::CheckCollision(GameObject &other) {   // AABB collision
+    bool collisionX = Position.x + Scale.x >= other.Position.x 
+                        && other.Position.x + other.Scale.x >= Position.x;
+    bool collisionY = Position.y + Scale.y >= other.Position.y 
+                        && other.Position.y + other.Scale.y >= Position.y;
+    
+    return collisionX && collisionY;
+}
+
+void GameObject::PlayerReset(glm::vec2& playPos, const glm::vec2& PLAYER_SIZE) {
+    Position = playPos;
+    Scale = PLAYER_SIZE;
 }
