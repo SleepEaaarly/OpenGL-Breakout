@@ -1,15 +1,19 @@
 #include "particle_generator.h"
+#include <glm/gtc/matrix_transform.hpp>
+
+GLuint newParticles = 2;
 
 ParticleGenerator::ParticleGenerator(Shader &shader, Texture2D &texture, GLuint amount) {
     this->shader = shader;
     this->texture = texture;
     this->amount = amount;
+    init();
 }
 
-void ParticleGenerator::Update(GLfloat dt, GameObject &object, GLuint newParticles, glm::vec2 offset) {
-    GLuint nr_new_particles = 2;
+void ParticleGenerator::Update(GLfloat dt, GameObject &object) {
     // Add new particles
-    for (int i = 0; i < nr_new_particles; i++) {
+    glm::vec2 offset(object.Scale.x / 4., object.Scale.y / 4.);
+    for (int i = 0; i < newParticles; i++) {
         int unusedParticle = firstUnusedParticle();
         respawnParticle(particles[unusedParticle], object, offset);
     }
@@ -24,7 +28,23 @@ void ParticleGenerator::Update(GLfloat dt, GameObject &object, GLuint newParticl
 }
 
 void ParticleGenerator::Draw() {
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+    shader.Use();
+    glm::mat4 projection = glm::ortho(0., 800., 600., 0., -1., 1.);
+    for (Particle &p : particles) {
+        if (p.Life > 0.f) {
+            shader.SetVec2("offset", p.Position);
+            shader.SetVec4("color", p.Color);
+            shader.SetMat4("projection", projection);
+            shader.SetInt("sprite", 0);
 
+            texture.Bind();
+            glBindVertexArray(VAO);
+            glDrawArrays(GL_TRIANGLES, 0, 6);
+            glBindVertexArray(0);
+        }
+    }
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 void ParticleGenerator::init() {
@@ -53,4 +73,33 @@ void ParticleGenerator::init() {
     }
 }
 
+GLuint lastUsedParticle = 0;
+GLuint ParticleGenerator::firstUnusedParticle() {
+    // search from last used particle
+    for (int i = lastUsedParticle; i < amount; i++) {
+        if (particles[i].Life <= 0.f) {
+            lastUsedParticle = i;
+            return i;
+        }
+    }
+    // Otherwise do linear search
+    for (int i = 0; i < lastUsedParticle; i++) {
+        if (particles[i].Life <= 0.f) {
+            lastUsedParticle = i;
+            return i;
+        }
+    }
+    // Override first particle if others alive
+    lastUsedParticle = 0;
+    return 0;
+}
 
+
+void ParticleGenerator::respawnParticle(Particle &particle, GameObject &object, glm::vec2 offset) {
+    GLfloat random = ((rand() % 100) - 50) / 10.f;
+    GLfloat rColor = 0.5 + ((rand() % 100) / 100.f);
+    particle.Position = object.Position + random + offset;
+    particle.Color = glm::vec4(rColor, rColor, rColor, 1.f);
+    particle.Life = 1.f;
+    particle.Velocity = -object.Velocity * 0.1f;
+}

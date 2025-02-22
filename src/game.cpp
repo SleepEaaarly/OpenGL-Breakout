@@ -2,6 +2,7 @@
 #include "game.h"
 #include "resource_manager.h"
 #include "ball_object.h"
+#include "particle_generator.h"
 #include <iostream>
 
 #define EPS 1e-6
@@ -15,6 +16,7 @@ const GLfloat BALL_RADIUS = 12.5f;
 SpriteRenderer *Renderer;
 GameObject *Player;
 BallObject *Ball;
+ParticleGenerator *Particles;
 
 Game::Game(GLuint width, GLuint height) : State(GAME_ACTIVE), Keys(), Width(width), Height(height)
 {
@@ -26,18 +28,21 @@ Game::~Game()
     delete Renderer;
     delete Player;
     delete Ball;
+    delete Particles;
 }
 
 void Game::Init() 
 {
-    ResourceManager::GetInstance()->LoadShader("shaders/sprite_renderer.vs", "shaders/sprite_renderer.fs", nullptr, "sprite");
-    
+    Shader spriteShader = ResourceManager::GetInstance()->LoadShader("shaders/sprite_renderer.vs", "shaders/sprite_renderer.fs", nullptr, "sprite");
+    Shader particleShader = ResourceManager::GetInstance()->LoadShader("shaders/particle.vs", "shaders/particle.fs", nullptr, "particle");
+
     // load textures
     ResourceManager::GetInstance()->LoadTexture("textures/background.jpg", "background");
     Texture2D ballTex = ResourceManager::GetInstance()->LoadTexture("textures/awesomeface.png", "face");
     ResourceManager::GetInstance()->LoadTexture("textures/block.png", "block");
     ResourceManager::GetInstance()->LoadTexture("textures/block_solid.png", "block_solid");
     Texture2D paddleTex = ResourceManager::GetInstance()->LoadTexture("textures/paddle.png", "paddle");
+    Texture2D particleTex = ResourceManager::GetInstance()->LoadTexture("textures/particle.png", "particle");
     // load levels
     GameLevel one;   one.Load("levels/one.lvl", Width, 0.5 * Height);
     GameLevel two;   two.Load("levels/two.lvl", Width, 0.5 * Height);
@@ -50,8 +55,7 @@ void Game::Init()
     Levels.push_back(four);
     Level = 0;      // 第一关对应下标0
 
-    Shader shader = ResourceManager::GetInstance()->GetShader("sprite");
-    Renderer = new SpriteRenderer(shader);
+    Renderer = new SpriteRenderer(spriteShader);
     glm::vec2 playPos = glm::vec2(
         Width / 2 - PLAYER_SIZE.x / 2,
         Height - PLAYER_SIZE.y
@@ -59,6 +63,11 @@ void Game::Init()
     Player = new GameObject(playPos, PLAYER_SIZE, paddleTex);
     glm::vec2 ballPos = playPos + glm::vec2(PLAYER_SIZE.x / 2 - BALL_RADIUS, -BALL_RADIUS * 2);
     Ball = new BallObject(ballPos, BALL_RADIUS, INITIAL_BALL_VELOCITY, ballTex);
+    Particles = new ParticleGenerator(
+        particleShader, 
+        particleTex,
+        500
+    );
 }
 
 void Game::ProcessInput(GLfloat dt) 
@@ -91,6 +100,8 @@ void Game::Update(GLfloat dt)
         ResetLevel();
         ResetPlayer();
     }
+
+    Particles->Update(dt, *Ball);
 }
 
 void Game::Render() 
@@ -101,6 +112,8 @@ void Game::Render()
         glm::vec2(0, 0), glm::vec2(Width, Height));
         Levels[Level].Draw(*Renderer);
         Player->Draw(*Renderer);
+        // Particle before ball
+        Particles->Draw();
         Ball->Draw(*Renderer);
     }
 }
@@ -129,22 +142,22 @@ void Game::DoCollisions(GLfloat dt) {
                 }
 
                 if (up) {
-                    Ball->Position.y = brick.Position.y - Ball->Radius;
+                    Ball->Position.y = brick.Position.y - 2 * Ball->Radius;
                     Ball->Velocity.y = -Ball->Velocity.y;
-                    // std::cout << "UP" << std::endl;
+                    std::cout << "UP" << std::endl;
                 } else if (down) {
-                    Ball->Position.y = brick.Position.y + brick.Scale.y + Ball->Radius;
+                    Ball->Position.y = brick.Position.y + brick.Scale.y;
                     Ball->Velocity.y = -Ball->Velocity.y;
-                    // std::cout << "DOWN" << std::endl;
+                    std::cout << "DOWN" << std::endl;
                 }
                 if (left) {
-                    Ball->Position.x = brick.Position.x - Ball->Radius;
+                    Ball->Position.x = brick.Position.x - 2 * Ball->Radius;
                     Ball->Velocity.x = -Ball->Velocity.x;
-                    // std::cout << "LEFT" << std::endl;
+                    std::cout << "LEFT" << std::endl;
                 } else if (right) {
-                    Ball->Position.x = brick.Position.x + brick.Scale.x + Ball->Radius;
+                    Ball->Position.x = brick.Position.x + brick.Scale.x;
                     Ball->Velocity.x = -Ball->Velocity.x;
-                    // std::cout << "RIGHT" << std::endl;
+                    std::cout << "RIGHT" << std::endl;
                 }
                 
             }

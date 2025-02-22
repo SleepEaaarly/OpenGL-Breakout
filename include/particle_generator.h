@@ -22,7 +22,7 @@ public:
     // Constructor
     ParticleGenerator(Shader &shader, Texture2D &texture, GLuint amount);
     // Update all particles
-    void Update(GLfloat dt, GameObject &object, GLuint newParticles, glm::vec2 offset = glm::vec2(0.f, 0.f));
+    void Update(GLfloat dt, GameObject &object);
     // Render all particles
     void Draw();
 private:
