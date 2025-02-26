@@ -1,3 +1,6 @@
+#ifndef POST_PROCESS
+#define POST_PROCESS
+
 #include "shader.h"
 #include "texture.h"
 
@@ -7,9 +10,6 @@ private:
     Shader shader;
     GLuint width;
     GLuint height;
-    GLboolean chaos;
-    GLboolean confuse;
-    GLboolean shake;
 
     Texture2D texture;
     GLuint FBO;
@@ -21,8 +21,14 @@ private:
     void initRenderData();
     
 public:
+    GLboolean chaos;
+    GLboolean confuse;
+    GLboolean shake;
+
     PostProcess(Shader &shader, int width, int height);
     void BeginRender();
     void EndRender();
     void Render(GLfloat time);
 };
+
+#endif

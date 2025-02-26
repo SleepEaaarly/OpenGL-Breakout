@@ -57,12 +57,13 @@ void PostProcess::initRenderData() {
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
     
     GLfloat vertices[] = {
-        0.0f, 1.0f, 0.0f, 1.0f,
-        1.0f, 0.0f, 1.0f, 0.0f,
-        0., 0., 0., 0.,
-        0., 1., 0., 1.,
-        1., 1., 1., 1.,
-        1., 0., 1., 0.,
+        -1.0f, -1.0f, 0.0f, 0.0f,
+         1.0f,  1.0f, 1.0f, 1.0f,
+        -1.0f,  1.0f, 0.0f, 1.0f,
+
+        -1.0f, -1.0f, 0.0f, 0.0f,
+         1.0f, -1.0f, 1.0f, 0.0f,
+         1.0f,  1.0f, 1.0f, 1.0f
     };
     
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);

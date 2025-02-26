@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <vector>
 #include "game_level.h"
+#include "power_up.h"
 
 const GLuint SCR_WIDTH = 800;
 const GLuint SCR_HEIGHT = 600;
@@ -22,7 +23,8 @@ public:
     GLuint Width, Height;
     std::vector<GameLevel> Levels;
     GLuint Level;
-    
+    std::vector<PowerUp> PowerUps;
+
     Game(GLuint width, GLuint height);
     ~Game();
 
@@ -34,6 +36,8 @@ public:
     void DoCollisions(GLfloat dt);
     void ResetLevel();
     void ResetPlayer();
+    void SpawnPowerUps(GameObject &block);
+    void UpdatePowerUps(GLfloat dt);
 };
 
 #endif
